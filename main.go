@@ -12,9 +12,7 @@ func main() {
 
 	bookings := []string{}
 
-	fmt.Printf("Welcome to %v booking application\n", conferenceName)
-	fmt.Printf("We have total of %v tickets and %v are still available\n", ConferenceTicket, remainingTicket)
-	fmt.Println("Get your tickets here to attend")
+	greetUser(conferenceName, ConferenceTicket, remainingTicket)
 
 	for {
 		var firstName string
@@ -44,7 +42,7 @@ func main() {
 			remainingTicket -= userTicket
 			bookings = append(bookings, firstName+" "+lastName)
 
-			fmt.Printf("Thank you %v %v for booking %v tickets.You will receive a confirmation email at %v. \n", firstName, lastName, userTicket, email)
+			fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v. \n", firstName, lastName, userTicket, email)
 			fmt.Printf("%v tickets reaming for %v. \n", remainingTicket, conferenceName)
 
 			firstNames := []string{}
@@ -68,11 +66,17 @@ func main() {
 				fmt.Printf("email address does not contains @ sign\n")
 			}
 			if !isValildTicketNumber {
-				fmt.Printf("Your input data is invalid please try again!\n")
+				fmt.Printf("number of ticket is invalid \n")
 			}
 
 			continue
 		}
 
 	}
+}
+
+func greetUser(conferenceName string, ConferenceTicket uint8, remainingTicket uint8) {
+	fmt.Printf("Welcome to %v booking application\n", conferenceName)
+	fmt.Printf("We have total of %v tickets and %v are still available\n", ConferenceTicket, remainingTicket)
+	fmt.Println("Get your tickets here to attend")
 }
