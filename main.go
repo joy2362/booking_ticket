@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"sync"
+	"time"
 
 	"github.com/joy2362/booking_ticket/helper"
 )
@@ -13,7 +14,16 @@ const ConferenceTicket = 50
 
 var remainingTicket uint8 = 50
 
-var bookings []string
+var bookings []UserData
+
+type UserData struct {
+	firstName  string
+	lastName   string
+	email      string
+	userTicket uint8
+}
+
+var wg sync.WaitGroup
 
 /**
  * main.
@@ -21,6 +31,7 @@ var bookings []string
  * @author	Joy2362
  * @since	v0.0.1
  * @version	v1.0.0	Tuesday, January 2nd, 2024.
+ * @version	v1.0.1	Tuesday, January 2nd, 2024.
  * @global
  * @return	void
  */
@@ -33,6 +44,9 @@ func main() {
 
 		if isValildTicketNumber && isValidEmail && isValidName {
 			booking(firstName, lastName, email, userTicket)
+			wg.Add(1)
+			go sendingEmail(firstName, lastName, email, userTicket)
+
 			firstNames := getFirstNames()
 			fmt.Printf("The first names of booking are: %v\n", firstNames)
 
@@ -40,6 +54,7 @@ func main() {
 				fmt.Println("we are running out of ticket.")
 				break
 			}
+			defer wg.Wait()
 		} else {
 			helper.PrintValidationError(isValidName, isValidEmail, isValildTicketNumber)
 			continue
@@ -53,6 +68,7 @@ func main() {
  * @author	Joy2362
  * @since	v0.0.1
  * @version	v1.0.0	Tuesday, January 2nd, 2024.
+ * @version	v1.0.1	Tuesday, January 2nd, 2024.
  * @global
  * @return	void
  */
@@ -68,15 +84,15 @@ func greetUser() {
  * @author	Joy2362
  * @since	v0.0.1
  * @version	v1.0.0	Tuesday, January 2nd, 2024.
+ * @version	v1.0.1	Tuesday, January 2nd, 2024.
  * @global
  * @return	mixed
  */
 func getFirstNames() []string {
 	firstNames := []string{}
 
-	for _, name := range bookings {
-		var names = strings.Fields(name)
-		firstNames = append(firstNames, names[0])
+	for _, user := range bookings {
+		firstNames = append(firstNames, user.firstName)
 	}
 
 	return firstNames
@@ -88,6 +104,7 @@ func getFirstNames() []string {
  * @author	Joy2362
  * @since	v0.0.1
  * @version	v1.0.0	Tuesday, January 2nd, 2024.
+ * @version	v1.0.1	Tuesday, January 2nd, 2024.
  * @global
  * @param	mixed	string
  * @param	mixed	string
@@ -122,6 +139,7 @@ func getUserInput() (string, string, string, uint8) {
  * @author	Joy2362
  * @since	v0.0.1
  * @version	v1.0.0	Tuesday, January 2nd, 2024.
+ * @version	v1.0.1	Tuesday, January 2nd, 2024.
  * @global
  * @param	firstname 	string
  * @param	lastname  	string
@@ -132,14 +150,23 @@ func getUserInput() (string, string, string, uint8) {
 func booking(firstName string, lastName string, email string, userTicket uint8) {
 	remainingTicket -= userTicket
 
-	var userData = make(map[string]string)
-
-	userData["firstName"] = firstName
-	userData["lastName"] = lastName
-	userData["email"] = email
-
-	bookings = append(bookings, firstName+" "+lastName)
+	var userData = UserData{
+		firstName:  firstName,
+		lastName:   lastName,
+		email:      email,
+		userTicket: userTicket,
+	}
+	bookings = append(bookings, userData)
 
 	fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v. \n", firstName, lastName, userTicket, email)
 	fmt.Printf("%v tickets reaming for %v. \n", remainingTicket, conferenceName)
+}
+
+func sendingEmail(firstName string, lastName string, email string, userTicket uint8) {
+	defer wg.Done()
+	time.Sleep(10 * time.Second)
+	ticket := fmt.Sprintf("%v tickets for %v %v", userTicket, firstName, lastName)
+	fmt.Printf("##############")
+	fmt.Printf("Sending ticket: \n %v \nto email addtess %v \n", email, ticket)
+	fmt.Printf("##############")
 }
